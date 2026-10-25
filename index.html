@@ -476,38 +476,94 @@ CreateGlow("ride");
 CreateGlow("choke");
 
 // ==================================================
-// 5. SATU SISTEM PEMUTAR SUARA
-// ==================================================
+
+ // ==================================================
+ // 5. SATU SISTEM PEMUTAR SUARA - AUDIO SIAP PAKAI
+ // ==================================================
 
 const activeCymbals = new Set();
+const activeVolumeSounds = {};
+const audioPools = new Map();
 
-function PlaySound(soundPath) {
-    const audio = new Audio(soundPath);
+const AUDIO_POOL_SIZE = 5;
 
-    audio.play().catch(function (error) {
-        console.error("Gagal memutar suara:", soundPath, error);
+// Siapkan beberapa salinan audio untuk setiap suara.
+function PrepareAudio(soundPath) {
+    if (audioPools.has(soundPath)) {
+        return audioPools.get(soundPath);
+    }
+
+    const pool = [];
+
+    for (let i = 0; i < AUDIO_POOL_SIZE; i++) {
+        const audio = new Audio(soundPath);
+
+        audio.preload = "auto";
+        audio.load();
+
+        pool.push({
+            audio: audio,
+            busy: false
+        });
+
+        audio.addEventListener("ended", function () {
+            const item = pool.find(function (entry) {
+                return entry.audio === audio;
+            });
+
+            if (item) {
+                item.busy = false;
+            }
+        });
+
+        audio.addEventListener("error", function () {
+            console.error("Gagal memuat suara:", soundPath);
+        });
+    }
+
+    audioPools.set(soundPath, pool);
+    return pool;
+}
+
+// Putar suara menggunakan audio yang sudah disiapkan.
+function PlaySound(soundPath, volumeLevel = 10) {
+    const pool = PrepareAudio(soundPath);
+
+    let item = pool.find(function (entry) {
+        return !entry.busy;
     });
+
+    // Jika semua salinan sedang dipakai, gunakan yang paling awal.
+    if (!item) {
+        item = pool[0];
+    }
+
+    const audio = item.audio;
+
+    item.busy = true;
+    audio.volume = Math.max(0, Math.min(10, volumeLevel)) / 10;
+
+    try {
+        audio.currentTime = 0;
+    } catch (error) {
+        // Browser mungkin belum siap mengatur posisi audio.
+    }
+
+    const playback = audio.play();
+
+    if (playback && typeof playback.catch === "function") {
+        playback.catch(function (error) {
+            item.busy = false;
+            console.error("Gagal memutar suara:", soundPath, error);
+        });
+    }
 
     return audio;
 }
-
-
-
-const activeVolumeSounds = {};
 
 function PlaySoundWithVolume(soundPath, volumeLevel) {
-    const audio = new Audio(soundPath);
-    audio.volume = volumeLevel / 10;
-
-    audio.play().catch(function (error) {
-        console.error("Gagal memutar suara:", soundPath, error);
-    });
-
-    return audio;
+    return PlaySound(soundPath, volumeLevel);
 }
-
-
-
 
 function PlayDrum(name) {
     const drum = drums[name];
@@ -518,23 +574,21 @@ function PlayDrum(name) {
     PlayGlow(name, drum.x, drum.y);
 }
 
-
-
 function PlayCymbal(name) {
     const cymbal = cymbals[name];
+
     if (!cymbal) return;
 
     const audio = PlaySound(cymbal.sound);
+
     activeCymbals.add(audio);
 
     audio.addEventListener("ended", function () {
         activeCymbals.delete(audio);
-    });
+    }, { once: true });
 
     PlayGlow(name, cymbal.x, cymbal.y);
 }
-
-
 
 function ChokeCymbals() {
     activeCymbals.forEach(function (audio) {
@@ -545,10 +599,6 @@ function ChokeCymbals() {
     activeCymbals.clear();
 }
 
-
-
-
-
 function PlayHiHat(mode) {
     const data = hihat[mode];
 
@@ -558,8 +608,37 @@ function PlayHiHat(mode) {
     PlayGlow("hihat-" + mode, data.x, data.y);
 }
 
+// Muat suara instrumen lebih awal setelah halaman siap.
+function PreloadDrumSounds() {
+    const soundPaths = new Set();
 
-// ==================================================
+    Object.values(drums).forEach(function (drum) {
+        soundPaths.add(drum.sound);
+    });
+
+    Object.values(cymbals).forEach(function (cymbal) {
+        soundPaths.add(cymbal.sound);
+    });
+
+    Object.values(hihat).forEach(function (item) {
+        soundPaths.add(item.sound);
+    });
+
+    soundPaths.add("Sound/crash_shading/Crash_Shading.ogg");
+    soundPaths.add("Sound/spacebar/Stick.ogg");
+    soundPaths.add("Sound/spacebar/Rimshot.ogg");
+
+    soundPaths.forEach(function (path) {
+        PrepareAudio(path);
+    });
+}
+
+if (document.readyState === "complete") {
+    PreloadDrumSounds();
+} else {
+    window.addEventListener("load", PreloadDrumSounds, { once: true });
+}
+
 
  // ==================================================
  // 6. SISTEM SHORTCUT KEYBOARD
