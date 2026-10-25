@@ -1,0 +1,5 @@
+Replace the custom component sound with your, remember the number of it to choose them in DvDrum, reclick to refresh sound change.
+
+Download other component sounds here: http://darktigerdevelop.altervista.org/forum/index.php
+
+Have fun! ;)
