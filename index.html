@@ -93,7 +93,7 @@
 }
 
 #choke-btn,
-#rimshot-btn {
+#rimclick-btn {
     width: 135px;
     height: 44px;
     padding: 8px;
@@ -117,7 +117,7 @@
 }
 
 #choke-btn:hover,
-#rimshot-btn:hover {
+#rimclick-btn:hover {
     background: linear-gradient(180deg, #514326, #201B12);
     box-shadow: 0 0 12px #D6B45B66;
 }
@@ -378,8 +378,8 @@ const cymbals = {
     }
 };
 
-// KOORDINAT GOLDEN GLOW RIMSHOT
-const rimshotGlow = {
+// KOORDINAT GOLDEN GLOW Rim Click
+const rimclickGlow = {
     x: 94.00,
     y: 93.00
 };
@@ -463,7 +463,7 @@ CreateGlow("hihat-closed");
 CreateGlow("tom1");
 CreateGlow("tom2");
 CreateGlow("tom3");
-CreateGlow("rimshot");
+CreateGlow("rimclick");
 CreateGlow("stick");
 CreateGlow("crash-shading");
 CreateGlow("snare-vol");
@@ -627,7 +627,7 @@ function PreloadDrumSounds() {
 
     soundPaths.add("Sound/crash_shading/Crash_Shading.ogg");
     soundPaths.add("Sound/spacebar/Stick.ogg");
-    soundPaths.add("Sound/spacebar/Rimshot.ogg");
+    soundPaths.add("Sound/spacebar/Rimclick.ogg");
 
     soundPaths.forEach(function (path) {
         PrepareAudio(path);
@@ -800,13 +800,13 @@ const snareVolKeys = {
 
 
     
-    // RIMSHOT: tombol angka 9
+    // Rim Click: tombol angka 9
    
 if (event.code === "Digit9" || event.code === "Numpad9") {
     event.preventDefault();
 
-    PlaySound("Sound/spacebar/Rimshot.ogg");
-    PlayGlow("rimshot", rimshotGlow.x, rimshotGlow.y);
+    PlaySound("Sound/spacebar/rimclick.ogg");
+    PlayGlow("rimclick", rimclickGlow.x, rimclickGlow.y);
 
     return;
 }
@@ -970,7 +970,7 @@ CreateKeyLabel("hihat-open", hihat.open.x, hihat.open.y, ["S"]);
 CreateKeyLabel("hihat-closed", hihat.closed.x, hihat.closed.y, ["S"]);
 CreateKeyLabel("hihat-pedal", hihat.pedal.x, hihat.pedal.y, ["Shift"]);
 // Label untuk fitur tambahan
-CreateKeyLabel("rimshot", 90, 90, ["9"]);
+CreateKeyLabel("rimclick", 90, 90, ["9"]);
 CreateKeyLabel("choke", 80, 90, ["Ctrl"]);
 CreateKeyLabel("stick", 51, 22, ["Space"]);
 CreateKeyLabel("crash-shading", 45, 84, ["1 2 3"]);
@@ -1014,9 +1014,9 @@ UpdateKeyLabelPositions();
         <span>CHOKE</span>
     </button>
 
-   <button id="rimshot-btn" type="button">
+   <button id="rimclick-btn" type="button">
     <span aria-hidden="true">🥁</span>
-    <span>RIMSHOT</span>
+    <span>RIM CLICK</span>
 </button>
 </div>
 
